@@ -1,7 +1,20 @@
 import React from 'react';
 import { EKSTRALIGA_TEAMS } from '../data/teamsData';
 import { TrackCondition, BikeSetup } from '../types/speedway';
-import { Play, Wrench, CloudSun, Trophy, Shield, User, Zap, Flame, Volume2, HelpCircle } from 'lucide-react';
+import {
+  CloudSun,
+  Flame,
+  Gauge,
+  HelpCircle,
+  Play,
+  Shield,
+  Swords,
+  TimerReset,
+  Trophy,
+  User,
+  Wrench,
+  Zap,
+} from 'lucide-react';
 
 interface MainMenuProps {
   homeTeamId: string;
@@ -39,227 +52,398 @@ export const MainMenu: React.FC<MainMenuProps> = ({
     { name: 'Derby Pomorza i Kujaw', home: 'torun', away: 'gorzow' },
   ];
 
+  const timeOfDayLabel: Record<TrackCondition['timeOfDay'], string> = {
+    day: 'Dzień',
+    sunset: 'Zachód słońca',
+    night: 'Noc',
+  };
+
+  const gripLabel: Record<TrackCondition['trackGrip'], string> = {
+    hard: 'Twardy',
+    medium: 'Średni',
+    grippy: 'Przyczepny',
+  };
+
+  const weatherLabel: Record<TrackCondition['weather'], string> = {
+    sunny: 'Słonecznie',
+    overcast: 'Pochmurno',
+    rainy: 'Deszcz',
+  };
+
+  const featureCards = [
+    {
+      title: 'Start spod taśmy',
+      value: 'Sprzęgło + reakcja',
+      icon: TimerReset,
+      accent: 'text-emerald-300 border-emerald-500/20 bg-emerald-500/10',
+    },
+    {
+      title: 'Motocykl 500cc',
+      value: `13/${bikeSetup.rearSprocket} • ${bikeSetup.carburetorJet}`,
+      icon: Gauge,
+      accent: 'text-amber-300 border-amber-500/20 bg-amber-500/10',
+    },
+    {
+      title: 'Warunki toru',
+      value: `${timeOfDayLabel[trackCondition.timeOfDay]} • ${gripLabel[trackCondition.trackGrip]}`,
+      icon: CloudSun,
+      accent: 'text-sky-300 border-sky-500/20 bg-sky-500/10',
+    },
+  ];
+
   return (
-    <div className="fixed inset-0 z-40 flex flex-col justify-between p-4 sm:p-6 bg-gradient-to-t from-zinc-950 via-zinc-950/70 to-zinc-950/40 select-none overflow-y-auto">
-      {/* Top Brand Bar */}
-      <div className="flex items-center justify-between max-w-6xl mx-auto w-full">
-        <div className="flex items-center gap-3">
-          <div className="w-11 h-11 bg-amber-500 rounded-xl flex items-center justify-center font-black text-zinc-950 text-xl shadow-lg border-2 border-amber-300">
-            S
-          </div>
-          <div>
-            <div className="text-[10px] text-amber-400 font-mono tracking-widest uppercase font-bold flex items-center gap-1.5">
-              <Flame className="w-3.5 h-3.5 text-amber-500 fill-current" />
-              PGE Ekstraliga 3D Simulator
-            </div>
-            <h1 className="text-xl sm:text-2xl font-black text-white tracking-wider uppercase font-sans">
-              SPEEDWAY GRAND PRIX
-            </h1>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <button
-            onClick={onOpenHelp}
-            className="px-3 py-1.5 bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-700/80 rounded-xl text-zinc-200 text-xs font-mono flex items-center gap-1.5 backdrop-blur-md transition-all active:scale-95 cursor-pointer"
-          >
-            <HelpCircle className="w-4 h-4 text-amber-400" />
-            <span className="hidden sm:inline">Zasady & Sterowanie</span>
-          </button>
-        </div>
+    <div className="fixed inset-0 z-40 overflow-y-auto bg-[radial-gradient(circle_at_top_left,rgba(245,158,11,0.18),transparent_24%),radial-gradient(circle_at_top_right,rgba(14,165,233,0.16),transparent_22%),linear-gradient(180deg,rgba(9,9,11,0.62),rgba(9,9,11,0.88))] px-4 py-4 sm:px-6 sm:py-6 select-none">
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute -left-16 top-10 h-52 w-52 rounded-full bg-amber-500/10 blur-3xl" />
+        <div className="absolute right-0 top-24 h-64 w-64 rounded-full bg-sky-500/10 blur-3xl" />
+        <div className="absolute bottom-0 left-1/3 h-40 w-72 rounded-full bg-red-500/10 blur-3xl" />
       </div>
 
-      {/* Center Main Card */}
-      <div className="max-w-4xl mx-auto w-full my-auto py-6 space-y-6">
-        {/* Mode Selector (Tabs) */}
-        <div className="flex justify-center">
-          <div className="bg-zinc-900/90 border border-zinc-800 p-1.5 rounded-2xl flex gap-1 shadow-2xl backdrop-blur-md">
+      <div className="relative mx-auto flex min-h-full w-full max-w-7xl flex-col gap-6">
+        <div className="flex flex-col gap-4 rounded-[2rem] border border-white/10 bg-zinc-950/60 p-4 shadow-2xl backdrop-blur-xl sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-4">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-amber-300/60 bg-gradient-to-br from-amber-300 to-amber-500 text-2xl font-black text-zinc-950 shadow-[0_0_35px_rgba(245,158,11,0.25)]">
+              S
+            </div>
+            <div>
+              <div className="flex items-center gap-2 text-[10px] font-mono font-bold uppercase tracking-[0.35em] text-amber-300">
+                <Flame className="h-3.5 w-3.5 fill-current text-amber-400" />
+                Speedway Simulator
+              </div>
+              <h1 className="text-2xl font-black uppercase tracking-[0.16em] text-white sm:text-3xl">
+                Speedway Grand Prix
+              </h1>
+              <div className="text-xs font-mono text-zinc-400">
+                3D żużel, tuning motocykla i start spod taśmy
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/10 px-3 py-2 text-[11px] font-mono uppercase tracking-[0.2em] text-emerald-300">
+              {weatherLabel[trackCondition.weather]} • {timeOfDayLabel[trackCondition.timeOfDay]}
+            </div>
             <button
-              onClick={() => onToggleTrainingMode(false)}
-              className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-bold text-xs transition-all cursor-pointer ${
-                !isTrainingMode
-                  ? 'bg-amber-500 text-zinc-950 shadow-lg'
-                  : 'text-zinc-400 hover:text-white hover:bg-zinc-800/60'
-              }`}
+              onClick={onOpenHelp}
+              className="flex items-center gap-2 rounded-2xl border border-zinc-700/80 bg-zinc-900/75 px-4 py-2 text-xs font-mono text-zinc-200 transition-all hover:border-amber-500/40 hover:text-white active:scale-95 cursor-pointer"
             >
-              <Shield className="w-4 h-4" />
-              <span>MECZ LIGOWY (DERBY)</span>
-            </button>
-            <button
-              onClick={() => onToggleTrainingMode(true)}
-              className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-bold text-xs transition-all cursor-pointer ${
-                isTrainingMode
-                  ? 'bg-amber-500 text-zinc-950 shadow-lg'
-                  : 'text-zinc-400 hover:text-white hover:bg-zinc-800/60'
-              }`}
-            >
-              <User className="w-4 h-4" />
-              <span>TRENING SOLO (TESTY)</span>
+              <HelpCircle className="h-4 w-4 text-amber-400" />
+              <span>Zasady i Sterowanie</span>
             </button>
           </div>
         </div>
 
-        {/* Team Matchup Card (If League Match) */}
-        {!isTrainingMode ? (
-          <div className="bg-zinc-900/85 backdrop-blur-md border border-zinc-800 rounded-3xl p-6 shadow-2xl space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 items-center gap-4">
-              {/* Home Team */}
-              <div className="bg-zinc-950/70 border border-zinc-800/90 rounded-2xl p-4 flex flex-col items-center text-center space-y-2">
-                <div className="text-[10px] text-amber-400 font-mono font-bold uppercase tracking-wider">
-                  GOSPODARZE
-                </div>
-                <div
-                  className="w-14 h-14 rounded-2xl flex items-center justify-center font-black text-xl shadow-md border-2 border-white/20"
-                  style={{ backgroundColor: homeTeam.colors.primary, color: homeTeam.colors.text }}
+        <div className="grid gap-6 xl:grid-cols-[1.2fr_0.9fr]">
+          <div className="rounded-[2rem] border border-white/10 bg-zinc-950/60 p-5 shadow-2xl backdrop-blur-xl sm:p-7">
+            <div className="mb-6 flex flex-wrap items-center gap-3">
+              <div className="flex rounded-2xl border border-zinc-800 bg-zinc-900/80 p-1.5 shadow-inner">
+                <button
+                  onClick={() => onToggleTrainingMode(false)}
+                  className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold tracking-wide transition-all cursor-pointer sm:px-5 ${
+                    !isTrainingMode
+                      ? 'bg-amber-500 text-zinc-950 shadow-lg'
+                      : 'text-zinc-400 hover:bg-zinc-800/70 hover:text-white'
+                  }`}
                 >
-                  {homeTeam.shortName}
-                </div>
-                <div className="font-bold text-white text-base font-sans">{homeTeam.name}</div>
-                <div className="text-[11px] text-zinc-400 font-mono">
-                  Lider: {homeTeam.riders[0].name} ({homeTeam.riders[0].avgPoints} pkt/b)
-                </div>
-
-                <select
-                  value={homeTeamId}
-                  onChange={(e) => onSelectTeams(e.target.value, awayTeamId)}
-                  className="mt-2 w-full bg-zinc-900 border border-zinc-750 text-white rounded-lg p-2 text-xs font-mono cursor-pointer"
+                  <Shield className="h-4 w-4" />
+                  <span>Mecz Ligowy</span>
+                </button>
+                <button
+                  onClick={() => onToggleTrainingMode(true)}
+                  className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold tracking-wide transition-all cursor-pointer sm:px-5 ${
+                    isTrainingMode
+                      ? 'bg-amber-500 text-zinc-950 shadow-lg'
+                      : 'text-zinc-400 hover:bg-zinc-800/70 hover:text-white'
+                  }`}
                 >
-                  {EKSTRALIGA_TEAMS.map((t) => (
-                    <option key={t.id} value={t.id} disabled={t.id === awayTeamId}>
-                      {t.name}
-                    </option>
-                  ))}
-                </select>
+                  <User className="h-4 w-4" />
+                  <span>Trening Solo</span>
+                </button>
               </div>
 
-              {/* VS & Derby Badge */}
-              <div className="flex flex-col items-center text-center space-y-2">
-                <div className="w-12 h-12 rounded-full bg-zinc-800/90 border border-zinc-700 flex items-center justify-center font-black text-amber-400 text-base shadow-inner">
-                  VS
-                </div>
-                <div className="text-xs font-mono text-zinc-300 font-bold uppercase tracking-widest">
-                  15 Biegów • 4 Okrążenia
-                </div>
-                <div className="text-[11px] text-zinc-500 font-mono">
-                  Zasady PGE Speedway Ekstraliga
+              <div className="rounded-2xl border border-zinc-800 bg-zinc-900/80 px-4 py-2 text-xs font-mono uppercase tracking-[0.25em] text-zinc-400">
+                {isTrainingMode ? 'Tryb rozgrzewki' : 'Mecz 15 biegów'}
+              </div>
+            </div>
+
+            <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+              <div className="space-y-5">
+                <div>
+                  <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-amber-500/20 bg-amber-500/10 px-3 py-1 text-[11px] font-mono uppercase tracking-[0.25em] text-amber-300">
+                    <Trophy className="h-3.5 w-3.5" />
+                    Wieczór na stadionie
+                  </div>
+                  <h2 className="max-w-xl text-3xl font-black uppercase leading-tight text-white sm:text-4xl">
+                    {isTrainingMode ? 'Wyjedź sam na tor i dopracuj technikę jazdy.' : 'Zbuduj własne derby i wygrywaj biegi jeden po drugim.'}
+                  </h2>
+                  <p className="mt-3 max-w-2xl text-sm leading-relaxed text-zinc-300 sm:text-base">
+                    {isTrainingMode
+                      ? 'Trening pozwala sprawdzić reakcję spod taśmy, pracę motocykla w łuku i ustawienia gaźnika bez presji wyniku.'
+                      : 'Ustaw gospodarzy i gości, wybierz derby albo hit kolejki, a potem ruszaj do pełnego meczu w klimacie Ekstraligi.'}
+                  </p>
                 </div>
 
-                {/* Quick Presets */}
-                <div className="flex flex-wrap justify-center gap-1.5 pt-2">
-                  {DERBY_PRESETS.map((preset) => (
-                    <button
-                      key={preset.name}
-                      onClick={() => onSelectTeams(preset.home, preset.away)}
-                      className={`px-2.5 py-1 text-[10px] font-mono rounded-lg border transition-all cursor-pointer ${
-                        homeTeamId === preset.home && awayTeamId === preset.away
-                          ? 'bg-amber-500/20 text-amber-300 border-amber-500/60'
-                          : 'bg-zinc-800/60 text-zinc-400 border-zinc-700/50 hover:bg-zinc-700/60'
-                      }`}
-                    >
-                      {preset.name}
-                    </button>
-                  ))}
+                <div className="grid gap-3 sm:grid-cols-3">
+                  {featureCards.map((card) => {
+                    const Icon = card.icon;
+                    return (
+                      <div key={card.title} className="rounded-2xl border border-white/10 bg-zinc-900/75 p-4">
+                        <div className={`mb-3 inline-flex rounded-xl border p-2 ${card.accent}`}>
+                          <Icon className="h-4 w-4" />
+                        </div>
+                        <div className="text-[11px] font-mono uppercase tracking-[0.22em] text-zinc-500">
+                          {card.title}
+                        </div>
+                        <div className="mt-1 text-sm font-semibold text-white">
+                          {card.value}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="grid gap-3 sm:grid-cols-3">
+                  <button
+                    onClick={onOpenGarage}
+                    className="rounded-2xl border border-zinc-800 bg-zinc-900/85 p-4 text-left transition-all hover:-translate-y-0.5 hover:border-amber-500/30 hover:bg-zinc-900 cursor-pointer"
+                  >
+                    <div className="mb-3 inline-flex rounded-xl border border-amber-500/20 bg-amber-500/10 p-2 text-amber-300">
+                      <Wrench className="h-5 w-5" />
+                    </div>
+                    <div className="text-sm font-bold text-white">Garaż i tuning</div>
+                    <div className="mt-1 text-[11px] font-mono text-zinc-400">
+                      13/{bikeSetup.rearSprocket}T • zapłon {bikeSetup.ignitionTiming}° • dysza {bikeSetup.carburetorJet}
+                    </div>
+                  </button>
+
+                  <button
+                    onClick={onOpenWeather}
+                    className="rounded-2xl border border-zinc-800 bg-zinc-900/85 p-4 text-left transition-all hover:-translate-y-0.5 hover:border-sky-500/30 hover:bg-zinc-900 cursor-pointer"
+                  >
+                    <div className="mb-3 inline-flex rounded-xl border border-sky-500/20 bg-sky-500/10 p-2 text-sky-300">
+                      <CloudSun className="h-5 w-5" />
+                    </div>
+                    <div className="text-sm font-bold text-white">Toru i pogoda</div>
+                    <div className="mt-1 text-[11px] font-mono text-zinc-400">
+                      {weatherLabel[trackCondition.weather]} • {gripLabel[trackCondition.trackGrip]} • {trackCondition.temperature}°C
+                    </div>
+                  </button>
+
+                  <button
+                    onClick={onStartGame}
+                    className="rounded-2xl border border-amber-300/50 bg-gradient-to-r from-amber-300 via-amber-400 to-amber-500 p-4 text-left text-zinc-950 shadow-[0_10px_40px_rgba(245,158,11,0.25)] transition-all hover:-translate-y-0.5 hover:shadow-[0_18px_55px_rgba(245,158,11,0.32)] active:scale-[0.99] cursor-pointer"
+                  >
+                    <div className="mb-3 inline-flex rounded-xl bg-zinc-950/10 p-2">
+                      <Play className="h-5 w-5 fill-current" />
+                    </div>
+                    <div className="text-sm font-black uppercase tracking-[0.18em]">
+                      Wyjedź na tor
+                    </div>
+                    <div className="mt-1 text-[11px] font-mono text-zinc-900/75">
+                      Start biegu, kamera chase i pełne sterowanie zawodnikiem
+                    </div>
+                  </button>
                 </div>
               </div>
 
-              {/* Away Team */}
-              <div className="bg-zinc-950/70 border border-zinc-800/90 rounded-2xl p-4 flex flex-col items-center text-center space-y-2">
-                <div className="text-[10px] text-sky-400 font-mono font-bold uppercase tracking-wider">
-                  GOŚCIE
-                </div>
-                <div
-                  className="w-14 h-14 rounded-2xl flex items-center justify-center font-black text-xl shadow-md border-2 border-white/20"
-                  style={{ backgroundColor: awayTeam.colors.primary, color: awayTeam.colors.text }}
-                >
-                  {awayTeam.shortName}
-                </div>
-                <div className="font-bold text-white text-base font-sans">{awayTeam.name}</div>
-                <div className="text-[11px] text-zinc-400 font-mono">
-                  Lider: {awayTeam.riders[0].name} ({awayTeam.riders[0].avgPoints} pkt/b)
-                </div>
+              <div className="rounded-[1.75rem] border border-white/10 bg-zinc-900/80 p-4 shadow-inner">
+                {!isTrainingMode ? (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between rounded-2xl border border-zinc-800 bg-zinc-950/70 px-4 py-3">
+                      <div>
+                        <div className="text-[11px] font-mono uppercase tracking-[0.24em] text-zinc-500">
+                          Konfiguracja biegu
+                        </div>
+                        <div className="mt-1 flex items-center gap-2 text-sm font-semibold text-white">
+                          <Swords className="h-4 w-4 text-amber-300" />
+                          {homeTeam.shortName} vs {awayTeam.shortName}
+                        </div>
+                      </div>
+                      <div className="text-right text-[11px] font-mono text-zinc-400">
+                        15 biegów
+                        <br />
+                        4 okrążenia
+                      </div>
+                    </div>
 
-                <select
-                  value={awayTeamId}
-                  onChange={(e) => onSelectTeams(homeTeamId, e.target.value)}
-                  className="mt-2 w-full bg-zinc-900 border border-zinc-750 text-white rounded-lg p-2 text-xs font-mono cursor-pointer"
-                >
-                  {EKSTRALIGA_TEAMS.map((t) => (
-                    <option key={t.id} value={t.id} disabled={t.id === homeTeamId}>
-                      {t.name}
-                    </option>
-                  ))}
-                </select>
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div className="rounded-2xl border border-zinc-800 bg-zinc-950/70 p-4 text-center">
+                        <div className="text-[10px] font-mono uppercase tracking-[0.28em] text-amber-300">
+                          Gospodarze
+                        </div>
+                        <div
+                          className="mx-auto mt-3 flex h-16 w-16 items-center justify-center rounded-2xl border-2 border-white/20 text-xl font-black shadow-lg"
+                          style={{ backgroundColor: homeTeam.colors.primary, color: homeTeam.colors.text }}
+                        >
+                          {homeTeam.shortName}
+                        </div>
+                        <div className="mt-3 text-base font-bold text-white">{homeTeam.name}</div>
+                        <div className="mt-1 text-[11px] font-mono text-zinc-400">
+                          Lider: {homeTeam.riders[0].name} • {homeTeam.riders[0].avgPoints} pkt/b
+                        </div>
+                        <select
+                          value={homeTeamId}
+                          onChange={(e) => onSelectTeams(e.target.value, awayTeamId)}
+                          className="mt-4 w-full rounded-xl border border-zinc-700 bg-zinc-900 px-3 py-2 text-xs font-mono text-white cursor-pointer"
+                        >
+                          {EKSTRALIGA_TEAMS.map((t) => (
+                            <option key={t.id} value={t.id} disabled={t.id === awayTeamId}>
+                              {t.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div className="rounded-2xl border border-zinc-800 bg-zinc-950/70 p-4 text-center">
+                        <div className="text-[10px] font-mono uppercase tracking-[0.28em] text-sky-300">
+                          Goście
+                        </div>
+                        <div
+                          className="mx-auto mt-3 flex h-16 w-16 items-center justify-center rounded-2xl border-2 border-white/20 text-xl font-black shadow-lg"
+                          style={{ backgroundColor: awayTeam.colors.primary, color: awayTeam.colors.text }}
+                        >
+                          {awayTeam.shortName}
+                        </div>
+                        <div className="mt-3 text-base font-bold text-white">{awayTeam.name}</div>
+                        <div className="mt-1 text-[11px] font-mono text-zinc-400">
+                          Lider: {awayTeam.riders[0].name} • {awayTeam.riders[0].avgPoints} pkt/b
+                        </div>
+                        <select
+                          value={awayTeamId}
+                          onChange={(e) => onSelectTeams(homeTeamId, e.target.value)}
+                          className="mt-4 w-full rounded-xl border border-zinc-700 bg-zinc-900 px-3 py-2 text-xs font-mono text-white cursor-pointer"
+                        >
+                          {EKSTRALIGA_TEAMS.map((t) => (
+                            <option key={t.id} value={t.id} disabled={t.id === homeTeamId}>
+                              {t.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="rounded-2xl border border-zinc-800 bg-zinc-950/70 p-4">
+                      <div className="mb-3 text-[10px] font-mono uppercase tracking-[0.28em] text-zinc-500">
+                        Szybkie gotowe starcia
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {DERBY_PRESETS.map((preset) => (
+                          <button
+                            key={preset.name}
+                            onClick={() => onSelectTeams(preset.home, preset.away)}
+                            className={`rounded-xl border px-3 py-2 text-[11px] font-mono transition-all cursor-pointer ${
+                              homeTeamId === preset.home && awayTeamId === preset.away
+                                ? 'border-amber-500/50 bg-amber-500/15 text-amber-200'
+                                : 'border-zinc-700 bg-zinc-900 text-zinc-400 hover:border-zinc-600 hover:text-white'
+                            }`}
+                          >
+                            {preset.name}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex h-full flex-col justify-between gap-4">
+                    <div className="rounded-2xl border border-amber-500/20 bg-amber-500/10 p-4">
+                      <div className="mb-3 inline-flex rounded-xl border border-amber-500/20 bg-zinc-950/30 p-2 text-amber-300">
+                        <User className="h-5 w-5" />
+                      </div>
+                      <div className="text-xl font-bold text-white">Sesja treningowa</div>
+                      <p className="mt-2 text-sm leading-relaxed text-zinc-300">
+                        Trenuj wyjście spod taśmy, balans motocykla i utrzymanie slajdu bez presji wyniku drużynowego.
+                      </p>
+                    </div>
+
+                    <div className="grid gap-3">
+                      <div className="rounded-2xl border border-zinc-800 bg-zinc-950/70 p-4">
+                        <div className="text-[10px] font-mono uppercase tracking-[0.28em] text-zinc-500">
+                          Scenariusz treningu
+                        </div>
+                        <div className="mt-2 text-sm font-semibold text-white">
+                          Samotny przejazd po pełnym owalu
+                        </div>
+                        <div className="mt-1 text-[11px] font-mono text-zinc-400">
+                          Idealny do testu przełożenia, zapłonu i zachowania motocykla na wejściu w łuk.
+                        </div>
+                      </div>
+
+                      <div className="rounded-2xl border border-zinc-800 bg-zinc-950/70 p-4">
+                        <div className="text-[10px] font-mono uppercase tracking-[0.28em] text-zinc-500">
+                          Zalecenie
+                        </div>
+                        <div className="mt-2 text-sm font-semibold text-white">
+                          Zacznij od średniego toru i dyszy {bikeSetup.carburetorJet}
+                        </div>
+                        <div className="mt-1 text-[11px] font-mono text-zinc-400">
+                          Potem zmień warunki i sprawdź, jak reaguje przy większej wilgotności oraz innym docisku ciała.
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
-        ) : (
-          /* Training Mode Details */
-          <div className="bg-zinc-900/85 backdrop-blur-md border border-zinc-800 rounded-3xl p-6 shadow-2xl text-center space-y-3">
-            <div className="w-14 h-14 bg-amber-500/10 border border-amber-500/30 rounded-2xl flex items-center justify-center mx-auto text-amber-400">
-              <User className="w-7 h-7" />
+
+          <div className="grid gap-4">
+            <div className="rounded-[2rem] border border-white/10 bg-zinc-950/60 p-5 shadow-2xl backdrop-blur-xl">
+              <div className="mb-3 text-[11px] font-mono uppercase tracking-[0.28em] text-zinc-500">
+                Przed startem
+              </div>
+              <div className="space-y-3">
+                <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/10 p-4">
+                  <div className="mb-2 flex items-center gap-2 text-sm font-bold text-white">
+                    <Zap className="h-4 w-4 text-emerald-300" />
+                    Procedura startowa
+                  </div>
+                  <div className="text-[12px] leading-relaxed text-zinc-300">
+                    Trzymaj `SPACJĘ` przy zielonym świetle, utrzymaj obroty i puść sprzęgło dokładnie przy wystrzale taśmy.
+                  </div>
+                </div>
+
+                <div className="rounded-2xl border border-zinc-800 bg-zinc-900/75 p-4">
+                  <div className="mb-2 flex items-center gap-2 text-sm font-bold text-white">
+                    <Gauge className="h-4 w-4 text-amber-300" />
+                    Najważniejsze sterowanie
+                  </div>
+                  <div className="text-[12px] leading-relaxed text-zinc-300">
+                    `A / D` skręt i kontra, `W` gaz, `Shift` dociążenie, `T` zrywka, `I` odwrócenie skrętu, `C` zmiana kamery.
+                  </div>
+                </div>
+              </div>
             </div>
-            <h2 className="text-xl font-bold text-white font-sans">
-              Sesja Treningowa Solo
-            </h2>
-            <p className="text-xs text-zinc-300 font-mono max-w-lg mx-auto leading-relaxed">
-              Wyjedź na tor samemu. Sprawdź zachowanie motocykla na wejściu w łuk, dopasuj
-              zębatki i zapłon w garażu oraz trenuj perfekcyjny start na zwolnienie sprzęgła
-              przy zielonym świetle maszyny startowej.
-            </p>
+
+            <div className="rounded-[2rem] border border-white/10 bg-zinc-950/60 p-5 shadow-2xl backdrop-blur-xl">
+              <div className="mb-3 text-[11px] font-mono uppercase tracking-[0.28em] text-zinc-500">
+                Klimat biegu
+              </div>
+              <div className="rounded-3xl border border-zinc-800 bg-gradient-to-br from-zinc-900 via-zinc-950 to-zinc-900 p-5">
+                <div className="inline-flex items-center gap-2 rounded-full border border-red-500/20 bg-red-500/10 px-3 py-1 text-[10px] font-mono uppercase tracking-[0.24em] text-red-200">
+                  <Flame className="h-3.5 w-3.5 text-red-300" />
+                  Showroom 3D
+                </div>
+                <div className="mt-4 text-2xl font-black uppercase leading-tight text-white">
+                  Lepsze modele, płynniejsza kamera i żywsza prezentacja toru.
+                </div>
+                <div className="mt-3 text-sm leading-relaxed text-zinc-300">
+                  Menu pokazuje teraz scenę bardziej jak ekran gry: z wyraźną ekspozycją motocykli, konfiguracją biegu i szybką drogą do startu.
+                </div>
+              </div>
+            </div>
           </div>
-        )}
-
-        {/* Quick Launch Buttons & Modals */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <button
-            onClick={onOpenGarage}
-            className="p-3.5 bg-zinc-900/90 hover:bg-zinc-800 border border-zinc-800 rounded-2xl text-left flex items-center gap-3 transition-all cursor-pointer backdrop-blur-md active:scale-98"
-          >
-            <div className="p-2.5 bg-amber-500/10 border border-amber-500/30 rounded-xl text-amber-400">
-              <Wrench className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="text-xs font-bold text-white">Garaż & Tuning</div>
-              <div className="text-[10px] text-zinc-400 font-mono">
-                13/{bikeSetup.rearSprocket}T • {bikeSetup.carburetorJet}mm • {bikeSetup.ignitionTiming}°
-              </div>
-            </div>
-          </button>
-
-          <button
-            onClick={onOpenWeather}
-            className="p-3.5 bg-zinc-900/90 hover:bg-zinc-800 border border-zinc-800 rounded-2xl text-left flex items-center gap-3 transition-all cursor-pointer backdrop-blur-md active:scale-98"
-          >
-            <div className="p-2.5 bg-sky-500/10 border border-sky-500/30 rounded-xl text-sky-400">
-              <CloudSun className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="text-xs font-bold text-white">Warunki Toru</div>
-              <div className="text-[10px] text-zinc-400 font-mono uppercase">
-                {trackCondition.timeOfDay} • {trackCondition.trackGrip}
-              </div>
-            </div>
-          </button>
-
-          {/* START BUTTON */}
-          <button
-            onClick={onStartGame}
-            className="p-3.5 bg-amber-500 hover:bg-amber-400 text-zinc-950 font-black rounded-2xl flex items-center justify-center gap-2 shadow-2xl transition-all cursor-pointer active:scale-95 text-sm uppercase tracking-wider"
-          >
-            <Play className="w-5 h-5 fill-current" />
-            <span>WYJEDŹ NA TOR (START)</span>
-          </button>
         </div>
-      </div>
 
-      {/* Bottom Hint Banner */}
-      <div className="max-w-4xl mx-auto w-full bg-zinc-950/80 border border-zinc-800/80 rounded-2xl px-4 py-2.5 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs font-mono text-zinc-400">
-        <div className="flex items-center gap-2">
-          <Zap className="w-4 h-4 text-emerald-400" />
-          <span>START: Trzymaj SPACJĘ (Sprzęgło) przy zielonym świetle i puść w momencie startu taśmy!</span>
-        </div>
-        <div className="text-zinc-400 text-[11px]">
-          Sterowanie: A / D (Skręt / Kontra) • W (Gaz) • Shift/S (Dociążenie) • T (Zrywka) • I (Odwróć skręt)
+        <div className="rounded-[2rem] border border-white/10 bg-zinc-950/65 px-4 py-3 shadow-xl backdrop-blur-xl">
+          <div className="flex flex-col gap-2 text-xs font-mono text-zinc-400 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex items-center gap-2 text-zinc-300">
+              <Zap className="h-4 w-4 text-emerald-300" />
+              <span>Start: trzymaj sprzęgło, pilnuj reakcji i nie zerwij taśmy.</span>
+            </div>
+            <div className="text-[11px] text-zinc-500">
+              Sterowanie: A / D • W • Shift / S • T • I • C
+            </div>
+          </div>
         </div>
       </div>
     </div>

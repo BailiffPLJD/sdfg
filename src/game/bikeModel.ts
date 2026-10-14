@@ -52,6 +52,27 @@ const HELMET_COLORS: Record<HelmetColor, number> = {
 export function createSpeedwayBikeModel(initialHelmet: HelmetColor, isPlayer: boolean): BikeMeshHandle {
   const root = new THREE.Group();
 
+  const createMirroredMesh = <T extends THREE.BufferGeometry>(
+    geometry: T,
+    material: THREE.Material,
+    position: THREE.Vector3,
+    parent: THREE.Object3D,
+    rotation?: THREE.Euler,
+    scale?: THREE.Vector3
+  ) => {
+    [-1, 1].forEach((side) => {
+      const mesh = new THREE.Mesh(geometry, material);
+      mesh.position.set(position.x, position.y, Math.abs(position.z) * side);
+      if (rotation) {
+        mesh.rotation.set(rotation.x, rotation.y * side, rotation.z * side);
+      }
+      if (scale) {
+        mesh.scale.copy(scale);
+      }
+      parent.add(mesh);
+    });
+  };
+
   // 1. PBR MATERIALS
   const chromeMat = new THREE.MeshStandardMaterial({
     color: 0xf8fafc,
@@ -113,6 +134,24 @@ export function createSpeedwayBikeModel(initialHelmet: HelmetColor, isPlayer: bo
     color: isPlayer ? 0xf97316 : 0xef4444,
     roughness: 0.5,
     metalness: 0.2,
+  });
+
+  const carbonMat = new THREE.MeshStandardMaterial({
+    color: 0x111827,
+    roughness: 0.42,
+    metalness: 0.52,
+  });
+
+  const leatherMat = new THREE.MeshStandardMaterial({
+    color: 0x18181b,
+    roughness: 0.68,
+    metalness: 0.08,
+  });
+
+  const skinMat = new THREE.MeshStandardMaterial({
+    color: 0xe7c2a1,
+    roughness: 0.82,
+    metalness: 0.02,
   });
 
   // Steel shoe (kapeć żużlowy z polerowaną blachą ze stali nierdzewnej)
@@ -287,12 +326,67 @@ export function createSpeedwayBikeModel(initialHelmet: HelmetColor, isPlayer: bo
   tank.position.set(0.16, 0.68, 0);
   chassisGroup.add(tank);
 
+  const tankPadGeo = new THREE.BoxGeometry(0.18, 0.04, 0.14);
+  const tankPad = new THREE.Mesh(tankPadGeo, leatherMat);
+  tankPad.position.set(0.19, 0.76, 0);
+  tankPad.rotation.z = -0.35;
+  chassisGroup.add(tankPad);
+
   // Speedway seat pad
   const seatGeo = new THREE.BoxGeometry(0.38, 0.065, 0.16);
   const seatMat = new THREE.MeshStandardMaterial({ color: 0x09090b, roughness: 0.95 });
   const seat = new THREE.Mesh(seatGeo, seatMat);
   seat.position.set(-0.25, 0.63, 0);
   chassisGroup.add(seat);
+
+  const tailGeo = new THREE.BoxGeometry(0.18, 0.08, 0.18);
+  const tail = new THREE.Mesh(tailGeo, carbonMat);
+  tail.position.set(-0.49, 0.62, 0);
+  tail.rotation.z = -0.18;
+  chassisGroup.add(tail);
+
+  const frontPlateGeo = new THREE.BoxGeometry(0.05, 0.24, 0.22);
+  const frontPlateMat = new THREE.MeshPhysicalMaterial({
+    color: 0xf8fafc,
+    roughness: 0.24,
+    metalness: 0.18,
+    clearcoat: 0.8,
+    clearcoatRoughness: 0.1,
+  });
+
+  const rearMudguardGeo = new THREE.BoxGeometry(0.34, 0.03, 0.16);
+  const rearMudguard = new THREE.Mesh(rearMudguardGeo, carbonMat);
+  rearMudguard.position.set(-0.72, 0.56, 0);
+  rearMudguard.rotation.z = -0.16;
+  chassisGroup.add(rearMudguard);
+
+  const sidePanelGeo = new THREE.BoxGeometry(0.24, 0.16, 0.03);
+  createMirroredMesh(
+    sidePanelGeo,
+    frontPlateMat,
+    new THREE.Vector3(-0.08, 0.49, 0.13),
+    chassisGroup,
+    new THREE.Euler(0, 0.08, -0.08)
+  );
+
+  const numberPanelGeo = new THREE.BoxGeometry(0.18, 0.09, 0.016);
+  createMirroredMesh(
+    numberPanelGeo,
+    suitAccentMat,
+    new THREE.Vector3(-0.10, 0.50, 0.145),
+    chassisGroup,
+    new THREE.Euler(0, 0.06, -0.08)
+  );
+
+  const pegGeo = new THREE.CylinderGeometry(0.013, 0.013, 0.14, 10);
+  pegGeo.rotateX(Math.PI / 2);
+  createMirroredMesh(
+    pegGeo,
+    chromeMat,
+    new THREE.Vector3(-0.04, 0.20, 0.16),
+    chassisGroup,
+    new THREE.Euler(0, 0, 0.1)
+  );
 
   // FIM safety mud deflector behind rear wheel
   const deflectorGeo = new THREE.BoxGeometry(0.32, 0.14, 0.016);
@@ -396,6 +490,23 @@ export function createSpeedwayBikeModel(initialHelmet: HelmetColor, isPlayer: bo
   springR.position.set(0.12, -0.12, 0.085);
   frontFork.add(springR);
 
+  const frontPlate = new THREE.Mesh(frontPlateGeo, frontPlateMat);
+  frontPlate.position.set(0.33, 0.26, 0);
+  frontPlate.rotation.z = -0.32;
+  frontFork.add(frontPlate);
+
+  const plateStripeGeo = new THREE.BoxGeometry(0.054, 0.05, 0.2);
+  const plateStripe = new THREE.Mesh(plateStripeGeo, suitAccentMat);
+  plateStripe.position.set(0.335, 0.22, 0);
+  plateStripe.rotation.z = -0.32;
+  frontFork.add(plateStripe);
+
+  const frontMudguardGeo = new THREE.BoxGeometry(0.24, 0.028, 0.12);
+  const frontMudguard = new THREE.Mesh(frontMudguardGeo, carbonMat);
+  frontMudguard.position.set(0.25, -0.02, 0);
+  frontMudguard.rotation.z = -0.18;
+  frontFork.add(frontMudguard);
+
   // Front 23" Wheel
   const { wheelGroup: frontWheelGroup, tire: frontWheel } = createSpeedwayWheel(0.38, 0.055, 18);
   frontWheelGroup.position.set(0.18, -0.38, 0);
@@ -441,6 +552,11 @@ export function createSpeedwayBikeModel(initialHelmet: HelmetColor, isPlayer: bo
   pelvis.position.set(0, 0.06, 0);
   rider.add(pelvis);
 
+  const lowerBackGeo = new THREE.BoxGeometry(0.18, 0.12, 0.18);
+  const lowerBack = new THREE.Mesh(lowerBackGeo, suitTrimMat);
+  lowerBack.position.set(-0.02, 0.12, 0);
+  rider.add(lowerBack);
+
   // ARTICULATED TORSO & SPINE
   const torsoGroup = new THREE.Group();
   torsoGroup.position.set(0.04, 0.14, 0);
@@ -456,6 +572,20 @@ export function createSpeedwayBikeModel(initialHelmet: HelmetColor, isPlayer: bo
   const chest = new THREE.Mesh(chestGeo, suitMat);
   chest.scale.set(1.0, 1.0, 1.35);
   torsoGroup.add(chest);
+
+  const shoulderGeo = new THREE.SphereGeometry(0.07, 10, 8);
+  createMirroredMesh(
+    shoulderGeo,
+    suitAccentMat,
+    new THREE.Vector3(0.12, 0.27, 0.17),
+    torsoGroup
+  );
+
+  const neckGeo = new THREE.CylinderGeometry(0.045, 0.05, 0.08, 10);
+  const neck = new THREE.Mesh(neckGeo, skinMat);
+  neck.position.set(0.17, 0.39, 0);
+  neck.rotation.z = -0.28;
+  torsoGroup.add(neck);
 
   // Racing Plastron Bib with Poland / Team emblem on chest
   const bibGeo = new THREE.BoxGeometry(0.03, 0.22, 0.26);
@@ -482,6 +612,12 @@ export function createSpeedwayBikeModel(initialHelmet: HelmetColor, isPlayer: bo
   helmetGeo.scale(1.15, 1.0, 0.95);
   const helmetMesh = new THREE.Mesh(helmetGeo, helmetMat);
   head.add(helmetMesh);
+
+  const helmetAccentGeo = new THREE.TorusGeometry(0.12, 0.014, 8, 18);
+  const helmetAccent = new THREE.Mesh(helmetAccentGeo, suitTrimMat);
+  helmetAccent.rotation.y = Math.PI / 2;
+  helmetAccent.position.set(-0.01, 0.02, 0);
+  head.add(helmetAccent);
 
   // Helmet chin bar
   const chinGeo = new THREE.BoxGeometry(0.12, 0.08, 0.14);
@@ -516,6 +652,12 @@ export function createSpeedwayBikeModel(initialHelmet: HelmetColor, isPlayer: bo
   const strap = new THREE.Mesh(strapGeo, strapMat);
   head.add(strap);
 
+  const neckBraceGeo = new THREE.TorusGeometry(0.105, 0.02, 10, 18);
+  const neckBrace = new THREE.Mesh(neckBraceGeo, suitTrimMat);
+  neckBrace.rotation.x = Math.PI / 2;
+  neckBrace.position.set(0.02, -0.13, 0);
+  head.add(neckBrace);
+
   // ARTICULATED ARMS GRIPPING HANDLEBARS
   const gloveGeo = new THREE.SphereGeometry(0.052, 10, 8);
   const gloveMat = new THREE.MeshStandardMaterial({ color: 0x18181b, roughness: 0.75 });
@@ -533,6 +675,11 @@ export function createSpeedwayBikeModel(initialHelmet: HelmetColor, isPlayer: bo
   const armL = new THREE.Mesh(new THREE.TubeGeometry(armLCurve, 12, 0.042, 8, false), suitMat);
   armLGroup.add(armL);
 
+  const elbowPadGeo = new THREE.SphereGeometry(0.05, 10, 8);
+  const elbowPadL = new THREE.Mesh(elbowPadGeo, suitAccentMat);
+  elbowPadL.position.set(0.25, 0.05, -0.09);
+  armLGroup.add(elbowPadL);
+
   const gloveL = new THREE.Mesh(gloveGeo, gloveMat);
   gloveL.position.set(0.44, 0.04, -0.15);
   armLGroup.add(gloveL);
@@ -549,6 +696,10 @@ export function createSpeedwayBikeModel(initialHelmet: HelmetColor, isPlayer: bo
   ]);
   const armR = new THREE.Mesh(new THREE.TubeGeometry(armRCurve, 12, 0.042, 8, false), suitMat);
   armRGroup.add(armR);
+
+  const elbowPadR = new THREE.Mesh(elbowPadGeo, suitAccentMat);
+  elbowPadR.position.set(0.25, 0.05, 0.09);
+  armRGroup.add(elbowPadR);
 
   const gloveR = new THREE.Mesh(gloveGeo, gloveMat);
   gloveR.position.set(0.44, 0.04, 0.15);
@@ -589,6 +740,11 @@ export function createSpeedwayBikeModel(initialHelmet: HelmetColor, isPlayer: bo
   bootL.position.set(0.36, -0.50, -0.14);
   leftLeg.add(bootL);
 
+  const bootLToeGeo = new THREE.BoxGeometry(0.08, 0.06, 0.11);
+  const bootLToe = new THREE.Mesh(bootLToeGeo, leatherMat);
+  bootLToe.position.set(0.43, -0.51, -0.14);
+  leftLeg.add(bootLToe);
+
   // POLISHED STAINLESS STEEL SHOE SKID PLATE (BLACHA ŻUŻLOWA)
   const skidPlateGeo = new THREE.BoxGeometry(0.22, 0.022, 0.12);
   const skidPlate = new THREE.Mesh(skidPlateGeo, steelShoeMat);
@@ -627,6 +783,10 @@ export function createSpeedwayBikeModel(initialHelmet: HelmetColor, isPlayer: bo
   bootR.position.set(0.22, -0.48, 0.05);
   rightLeg.add(bootR);
 
+  const bootRToe = new THREE.Mesh(bootLToeGeo, leatherMat);
+  bootRToe.position.set(0.29, -0.49, 0.05);
+  rightLeg.add(bootRToe);
+
   // Dust & Spark Emitters (inside of the turn at -Z)
   const dustEmitter = new THREE.Vector3(-0.72, 0.1, 0);
   const shoeContactPoint = new THREE.Vector3(0.16, 0.02, -0.38);
@@ -638,6 +798,13 @@ export function createSpeedwayBikeModel(initialHelmet: HelmetColor, isPlayer: bo
       child.receiveShadow = true;
     }
   });
+
+  let frontForkVisual = 0;
+  let riderTwist = 0;
+  let legBlend = 0;
+  let flameStretch = 0;
+  let wheelSpinVisual = 0;
+  let idlePhase = Math.random() * Math.PI * 2;
 
   return {
     root,
@@ -669,46 +836,60 @@ export function createSpeedwayBikeModel(initialHelmet: HelmetColor, isPlayer: bo
       exhaustHeat: number = 0.2,
       throttle: number = 0
     ) => {
+      idlePhase += delta * (1.5 + speed * 0.03);
+      const idlePulse = Math.sin(idlePhase) * (speed > 1 ? 1 : 0.35);
+
       // 1. LEAN & SLIDE DYNAMICS
       // Leaning INWARD into corner:
       // In Three.js with root.rotation.y = -bike.rotation:
       // Local -Z is the inside of the turn (infield curb).
       // Negative rotation around X tilts +Y toward -Z (LEFT into turn!)
-      chassisGroup.rotation.x = -leanAngle;
+      chassisGroup.rotation.x = -leanAngle - idlePulse * 0.01;
 
       // 2. REAR SLIDE OUTWARD ("tył ucieka na zewnątrz, delikatnie"):
       // In local coordinates: +X is forward, -X is rear.
       // Positive rotation around Y swings rear (-X) toward +Z (OUTWARD to the fence)
       // and points the front wheel (+X) toward -Z (INWARD toward the apex)!
-      chassisGroup.rotation.y = slideAngle * 0.46;
+      riderTwist += (((slideAngle * 0.46) + steerAngle * 0.08) - riderTwist) * Math.min(1, delta * 8);
+      chassisGroup.rotation.y = riderTwist;
 
       // 3. Wheelie Pitch (front wheel lifts on heavy acceleration)
-      chassisGroup.rotation.z = pitchAngle;
+      chassisGroup.rotation.z = pitchAngle + idlePulse * 0.015;
 
       // 4. Wheel Spin
       const spinDelta = (speed / 0.33) * delta;
-      rearWheel.rotation.z -= spinDelta;
-      frontWheel.rotation.z -= spinDelta;
+      wheelSpinVisual += spinDelta;
+      rearWheel.rotation.z = -wheelSpinVisual;
+      frontWheel.rotation.z = -wheelSpinVisual;
 
       // 5. Front Handlebar & Fork Steering
       // Steer left (steerAngle < 0): turns front wheel toward -Z (LEFT into turn)
       // Counter-steer right (steerAngle > 0): turns front wheel toward +Z (RIGHT to hold slide)
-      frontFork.rotation.y = steerAngle * 0.45;
+      frontForkVisual += ((steerAngle * 0.45) - frontForkVisual) * Math.min(1, delta * 10);
+      frontFork.rotation.y = frontForkVisual;
+      frontFork.rotation.z = -0.02 + idlePulse * 0.01;
 
       // 6. Rider Left Leg Dynamic Articulation (extending steel shoe down to shale)
       // Left leg reaches down and out toward -Z (the inside track shale)
       const legExtension = Math.min(1.0, Math.max(0, (leanAngle * 0.95) + (slideAngle * 0.65)));
-      leftLeg.position.y = 0.08 - legExtension * 0.26;
-      leftLeg.position.z = -0.16 - legExtension * 0.24;
-      leftLeg.rotation.x = -legExtension * 0.48;
+      legBlend += (legExtension - legBlend) * Math.min(1, delta * 8);
+      leftLeg.position.y = 0.08 - legBlend * 0.26;
+      leftLeg.position.z = -0.16 - legBlend * 0.24;
+      leftLeg.rotation.x = -legBlend * 0.48;
+      leftLeg.rotation.z = -legBlend * 0.12;
+      rightLeg.rotation.x = 0.08 + Math.min(0.35, speed * 0.008) - legBlend * 0.06;
+      rightLeg.rotation.z = 0.03 + idlePulse * 0.01;
 
       // 7. Rider Body Posture & Weight Transfer
       // Body tuck forward over tank on straights/acceleration
-      rider.rotation.z = Math.PI / 16 + bodyTuck * 0.28;
+      rider.position.y = 0.68 + Math.sin(idlePhase * 2.2) * 0.01;
+      rider.rotation.z = Math.PI / 16 + bodyTuck * 0.28 - Math.abs(slideAngle) * 0.05;
       // Upper body leans into turn apex (toward -Z)
-      rider.rotation.x = -leanAngle * 0.34;
+      rider.rotation.x = -leanAngle * 0.34 + idlePulse * 0.02;
       // Head looks ahead through the corner curve
       head.rotation.y = (steerAngle * 0.25) - (leanAngle > 0.1 ? 0.32 : 0);
+      head.rotation.z = -leanAngle * 0.08 + idlePulse * 0.03;
+      head.position.y = 0.46 + Math.sin(idlePhase * 1.8) * 0.01;
 
       // 8. Exhaust header heat glow (on right side +Z)
       exhaustHeaderMat.emissiveIntensity = 0.12 + exhaustHeat * 1.85;
@@ -716,11 +897,13 @@ export function createSpeedwayBikeModel(initialHelmet: HelmetColor, isPlayer: bo
 
       // 9. Backfire flame pops on throttle lift
       if (throttle < 0.1 && speed > 10 && Math.random() > 0.92) {
+        flameStretch = 1.2;
         exhaustFlame.material.opacity = 0.9;
-        exhaustFlame.scale.set(1.2, 1.2, 1.2);
       } else {
         exhaustFlame.material.opacity = Math.max(0, exhaustFlame.material.opacity - 8 * delta);
+        flameStretch += (0.65 + throttle * 0.9 - flameStretch) * Math.min(1, delta * 10);
       }
+      exhaustFlame.scale.set(0.8 + throttle * 0.7, flameStretch, 0.8 + throttle * 0.45);
     },
     dispose: () => {
       root.traverse((obj) => {

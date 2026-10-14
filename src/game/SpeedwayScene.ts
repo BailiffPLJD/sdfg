@@ -84,6 +84,7 @@ export class SpeedwaySceneManager {
   // Camera & View
   private cameraMode: CameraMode = 'chase';
   private isMenuMode: boolean = true;
+  private menuPreviewClock = 0;
   private currentBikeSetup: BikeSetup;
   private currentTrackCondition: TrackCondition;
   private callbacks: SceneCallbacks;
@@ -688,6 +689,51 @@ export class SpeedwaySceneManager {
     }
   }
 
+  private updateMenuPreview(delta: number) {
+    this.menuPreviewClock += delta;
+
+    const previewStates = [...this.bikeStates];
+    previewStates.forEach((bike, index) => {
+      const mesh = this.bikeMeshes.get(bike.id);
+      if (!mesh) return;
+
+      const laneOffset = previewStates.length === 1
+        ? -0.1
+        : -0.68 + (index / Math.max(1, previewStates.length - 1)) * 1.18;
+      const baseProgress = 0.02 + index * 0.055;
+      const previewPhase = this.menuPreviewClock * 0.8 + index * 1.2;
+      const previewPoint = getIdealTrackPoint(
+        baseProgress + Math.sin(previewPhase * 0.35) * 0.004,
+        laneOffset + Math.sin(previewPhase) * 0.03
+      );
+
+      const targetPosition = new THREE.Vector3(previewPoint.x, 0, previewPoint.z);
+      mesh.root.position.lerp(targetPosition, Math.min(1, delta * 3.2));
+
+      const targetYaw = -previewPoint.heading + Math.sin(previewPhase * 0.7) * 0.07;
+      mesh.root.rotation.y += (targetYaw - mesh.root.rotation.y) * Math.min(1, delta * 3.6);
+
+      const showcaseLean = 0.16 + Math.sin(previewPhase) * 0.08;
+      const showcaseSlide = 0.2 + Math.cos(previewPhase * 0.85) * 0.08;
+      const showcaseSteer = Math.sin(previewPhase * 1.15) * 0.35;
+      const showcaseSpeed = 7 + Math.sin(previewPhase * 0.9) * 1.5;
+      const showcasePitch = 0.015 + Math.max(0, Math.sin(previewPhase * 0.65)) * 0.02;
+
+      mesh.updateVisuals(
+        showcaseLean,
+        showcasePitch,
+        showcaseSteer,
+        showcaseSpeed,
+        showcaseSlide,
+        delta,
+        showcaseLean > 0.18,
+        0.35 + Math.sin(previewPhase * 0.5) * 0.12,
+        0.22 + Math.max(0, Math.sin(previewPhase * 0.6)) * 0.2,
+        0.45 + Math.max(0, Math.sin(previewPhase * 0.7)) * 0.4
+      );
+    });
+  }
+
   private animate = () => {
     if (this.isDestroyed) return;
     this.animationFrameId = requestAnimationFrame(this.animate);
@@ -780,6 +826,10 @@ export class SpeedwaySceneManager {
       }
     }
 
+    if (this.isMenuMode) {
+      this.updateMenuPreview(delta);
+    }
+
     // 3. Audio & Telemetry Update
     if (player) {
       soundEngine.updateEngine(
@@ -861,7 +911,6 @@ export class SpeedwaySceneManager {
       }
     }
     sparkPosAttr.needsUpdate = true;
-    posAttr.needsUpdate = true;
 
     // 5. Update Rain Particles if active
     if (this.rainParticles && this.rainPositions) {
@@ -962,11 +1011,20 @@ export class SpeedwaySceneManager {
 
   private updateCamera(delta: number) {
     if (this.isMenuMode) {
-      const time = performance.now() * 0.00015;
-      const camX = Math.cos(time) * 75;
-      const camZ = Math.sin(time) * 65;
-      this.camera.position.set(camX, 28, camZ);
-      this.camera.lookAt(0, 4, -15);
+      const previewLeader = this.bikeStates[0];
+      const focus = previewLeader
+        ? new THREE.Vector3(previewLeader.x, 1.8, previewLeader.z)
+        : new THREE.Vector3(0, 2, -18);
+      const time = performance.now() * 0.00032;
+      const orbitX = Math.cos(time) * 24;
+      const orbitZ = Math.sin(time * 0.88) * 18;
+      const height = 8.5 + Math.sin(time * 1.4) * 1.2;
+      const cameraTarget = new THREE.Vector3(focus.x + orbitX, height, focus.z + orbitZ);
+      const lookTarget = focus.clone().add(new THREE.Vector3(0, 0.8 + Math.sin(time) * 0.2, 0));
+      this.camera.fov += (54 - this.camera.fov) * Math.min(1, delta * 4);
+      this.camera.updateProjectionMatrix();
+      this.camera.position.lerp(cameraTarget, Math.min(1, delta * 2.8));
+      this.camera.lookAt(lookTarget);
       return;
     }
 
