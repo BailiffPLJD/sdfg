@@ -1,0 +1,6 @@
+{
+  "name": "Speedway GP & Ekstraliga Simulator",
+  "description": "Realistyczny symulator żużlowy 3D z fizyką uślizgu, procedurą startową na sprzęgło, tuningiem motocykla i ligowymi derbami Ekstraligi.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
